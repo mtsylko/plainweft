@@ -96,6 +96,7 @@ export const pl: Dictionary = {
     lead: "Wpisz rodzaj ubrania, kolor albo materiał.",
     label: "Szukaj w\u00a0kolekcji",
     submit: "Szukaj",
+    clear: "Wyczyść wyszukiwanie",
     tryLabel: "Na przykład",
     suggestions: ["bluza", "czarny", "merino"],
     results: plural({

@@ -59,6 +59,14 @@
   }
 
   /*
+   * Tailwind v4 leaves buttons with the arrow cursor. Ours point like links do, while they can be
+   * pressed: a disabled or busy button keeps the arrow.
+   */
+  button:not(:disabled, [aria-disabled="true"]) {
+    cursor: pointer;
+  }
+
+  /*
    * A modal <dialog> makes the page inert but still lets it scroll. Lock it while the bag is open,
    * keeping the scrollbar's space so the page doesn't shift sideways.
    */
