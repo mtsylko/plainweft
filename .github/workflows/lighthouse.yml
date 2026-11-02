@@ -1,0 +1,41 @@
+name: Lighthouse
+
+# Audits the commit's production build, served on the runner, so a pull request can be compared
+# with main. Vercel's previews sit behind Vercel Authentication, and its bypass secret would end up
+# in the public reports. lighthouse-production.yml audits the deployed site.
+on:
+  push:
+    branches: [main]
+    paths: ["storefront/**", "package-lock.json", ".github/workflows/lighthouse.yml"]
+  pull_request:
+    paths: ["storefront/**", "package-lock.json", ".github/workflows/lighthouse.yml"]
+  workflow_dispatch:
+
+concurrency:
+  group: lighthouse-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    env:
+      SHOPIFY_STORE_DOMAIN: ${{ secrets.SHOPIFY_STORE_DOMAIN }}
+      SHOPIFY_STOREFRONT_PRIVATE_TOKEN: ${{ secrets.SHOPIFY_STOREFRONT_PRIVATE_TOKEN }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run build -w storefront
+      - run: npm run lighthouse -w storefront -- --upload.target=temporary-public-storage
+      - if: ${{ !cancelled() }}
+        run: node storefront/scripts/lighthouse-summary.ts >> "$GITHUB_STEP_SUMMARY"
+      # The public links expire after a few days; the artifact keeps every run's reports.
+      - if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v5
+        with:
+          name: lighthouse
+          path: storefront/.lighthouseci
+          include-hidden-files: true

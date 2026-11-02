@@ -7,6 +7,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "lighthouse": "npx --yes @lhci/cli@0.15.1 autorun",
     "lint": "eslint",
     "codegen": "graphql-codegen",
     "test": "vitest run",

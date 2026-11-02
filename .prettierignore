@@ -4,4 +4,5 @@ seed/generated
 seed/catalog/images
 storefront/generated
 storefront/.next
+storefront/.lighthouseci
 .taste-skill

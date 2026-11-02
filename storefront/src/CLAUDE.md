@@ -200,4 +200,6 @@ Run from the repo root with Node 22.18 or newer (`nvm use` reads `.nvmrc`). CI r
 Also run `npm run codegen -w storefront` after changing an operation, and
 `npm run build -w storefront` after changes to caching, Suspense boundaries or `@theme`: the build
 is what fails when request-time data is read outside Suspense, and it prerenders every page in both
-languages.
+languages. After a change to what the first screen loads (fonts, images, Suspense fallbacks), run
+`npm run lighthouse -w storefront` on that build and compare the table it leaves
+(`node storefront/scripts/lighthouse-summary.ts`) with the one from `main`.
