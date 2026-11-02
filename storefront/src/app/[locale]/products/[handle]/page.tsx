@@ -14,7 +14,7 @@ import { ProductTile } from "@/components/product-tile";
 import { localePath } from "@/i18n/locales";
 import { alternates, openGraph } from "@/i18n/metadata";
 import { getDictionary, getLocale } from "@/i18n/server";
-import { orderGallery, resolveSelection } from "@/lib/product/variants";
+import { resolveSelection } from "@/lib/product/variants";
 import {
   getCollectionProducts,
   getProduct,
@@ -81,19 +81,7 @@ async function ProductDetails({ handle }: { handle: Promise<string> }) {
       <article className="grid grid-cols-1 gap-x-2 gap-y-8 px-gutter pt-4 lg:grid-cols-12 lg:pt-6">
         {/* Entrances sit outside the Suspense boundaries, so they play once, not again on swap. */}
         <div className="enter lg:col-span-7">
-          <Suspense
-            fallback={
-              <GalleryView
-                images={orderGallery(
-                  product.images.nodes,
-                  product.variants.nodes,
-                  "Color",
-                  defaults.Color,
-                )}
-                title={product.title}
-              />
-            }
-          >
+          <Suspense fallback={<GalleryView product={product} color={defaults.Color} />}>
             <Gallery product={product} />
           </Suspense>
         </div>

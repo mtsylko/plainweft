@@ -46,19 +46,21 @@ function useSelection(product: Product): [Selection, (name: string, value: strin
 
 export function Gallery({ product }: { product: Product }) {
   const [selection] = useSelection(product);
-  return (
-    <GalleryView
-      images={orderGallery(product.images.nodes, product.variants.nodes, COLOR, selection[COLOR])}
-      title={product.title}
-    />
-  );
+  return <GalleryView product={product} color={selection[COLOR]} />;
 }
 
-export function GalleryView({ images, title }: { images: readonly Picture[]; title: string }) {
-  const { product } = useI18n().dictionary;
+/** The chosen colour's picture leads, the rest follow in the store's order. */
+export function GalleryView({ product, color }: { product: Product; color: string | undefined }) {
+  const words = useI18n().dictionary.product;
+  const variants = product.variants.nodes;
+  const images = orderGallery(product.images.nodes, variants, COLOR, color);
+  // Choosing a colour moves its picture into the lead slot. Fetched at the lead's size from the
+  // start, it swaps in as it is, while a bigger file fetched on the swap would leave the slot blank
+  // until it arrived.
+  const leads = new Set(variants.map((variant) => variant.image?.url));
   return (
     <ul
-      aria-label={format(product.pictures, { title })}
+      aria-label={format(words.pictures, { title: product.title })}
       className="-mx-gutter flex snap-x snap-mandatory gap-2 overflow-x-auto px-gutter lg:mx-0 lg:grid lg:grid-cols-2 lg:overflow-visible lg:px-0"
     >
       {images.map((image, index) => (
@@ -68,10 +70,12 @@ export function GalleryView({ images, title }: { images: readonly Picture[]; tit
         >
           <Image
             src={image.url}
-            alt={image.altText ?? title}
+            alt={image.altText ?? product.title}
             fill
             sizes={
-              index === 0 ? "(min-width: 1024px) 58vw, 85vw" : "(min-width: 1024px) 29vw, 85vw"
+              index === 0 || leads.has(image.url)
+                ? "(min-width: 1024px) 58vw, 85vw"
+                : "(min-width: 1024px) 29vw, 85vw"
             }
             loading={index === 0 ? "eager" : "lazy"}
             fetchPriority={index === 0 ? "high" : "auto"}
