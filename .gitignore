@@ -15,3 +15,6 @@ seed/generated/*.schema.json
 
 # Working files of the design review
 .taste-skill/
+
+# Lighthouse CI's reports (npm run lighthouse -w storefront)
+.lighthouseci/
