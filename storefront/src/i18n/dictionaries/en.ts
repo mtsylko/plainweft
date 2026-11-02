@@ -85,6 +85,7 @@ export const en = {
     lead: "Look for a garment, a colour or a fabric.",
     label: "Search the range",
     submit: "Search",
+    clear: "Clear the search",
     /** Searches to start from, which find something in this language. */
     tryLabel: "Try",
     suggestions: ["hoodie", "black", "merino"],
