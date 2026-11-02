@@ -1,0 +1,36 @@
+name: Lighthouse (production)
+
+# Audits the live site as visitors get it, through Vercel's CDN and functions, after each
+# production deploy. Vercel sends the repository_dispatch event, which only starts workflows that
+# are on main. Run it by hand to measure a change that isn't a deploy, such as the functions' region.
+on:
+  repository_dispatch:
+    types: [vercel.deployment.success]
+  workflow_dispatch:
+
+concurrency:
+  group: lighthouse-production
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    if: github.event_name == 'workflow_dispatch' || github.event.client_payload.environment == 'production'
+    runs-on: ubuntu-latest
+    env:
+      # Not the deployment's own URL: that one sits behind Vercel Authentication.
+      LIGHTHOUSE_SITE: https://plainweft.vercel.app
+    steps:
+      - uses: actions/checkout@v5
+      # No npm ci: Lighthouse CI comes through npx, and the summary needs only Node.
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+      - run: npm run lighthouse -w storefront -- --upload.target=temporary-public-storage
+      - if: ${{ !cancelled() }}
+        run: node storefront/scripts/lighthouse-summary.ts >> "$GITHUB_STEP_SUMMARY"
+      - if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v5
+        with:
+          name: lighthouse-production
+          path: storefront/.lighthouseci
+          include-hidden-files: true

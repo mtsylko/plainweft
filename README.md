@@ -178,6 +178,8 @@ The storefront reads the catalog with a Storefront API token from Shopify's **He
 npm run dev                     # dev server on http://localhost:3000
 npm run build -w storefront     # production build
 npm run start -w storefront     # serve the production build
+npm run lighthouse -w storefront  # audit the production build (build it first)
+node storefront/scripts/lighthouse-summary.ts  # the last audit as a table
 ```
 
 ### How it works
@@ -260,6 +262,35 @@ The storefront is in English and Polish: `/en/...` and `/pl/...`.
 A development store keeps its password page, and Shopify's checkout shows it before the
 checkout. The password is in the admin under **Online Store → Preferences**.
 
+### Performance
+
+[Lighthouse CI](https://github.com/GoogleChrome/lighthouse-ci) audits the home page, a collection
+and a product page, three times each on Lighthouse's phone profile (a mid-range Android on slow
+4G). Each median is checked against Google's "good" Core Web Vitals: LCP up to 2.5 s and CLS up to
+0.1. INP needs a real tap, so Total Blocking Time up to 200 ms stands in for it. The audit runs in
+two places, as each answers its own question:
+
+- **Does a change make the store slower?** Each pull request that touches the storefront, and each
+  push to `main`, is audited on its own production build, served on the runner
+  (`.github/workflows/lighthouse.yml`), so a change is compared with `main` in the same
+  conditions. Vercel's previews sit behind Vercel Authentication, and Lighthouse writes every
+  request header into its report, so a bypass secret would be published with it. The build reads
+  the catalog with two repository secrets, `SHOPIFY_STORE_DOMAIN` and
+  `SHOPIFY_STOREFRONT_PRIVATE_TOKEN`.
+- **How fast is the live site?** After each production deploy, Vercel's `vercel.deployment.success`
+  event starts an audit of https://plainweft.vercel.app (`.github/workflows/lighthouse-production.yml`),
+  which can also be run by hand from the Actions tab. These are the numbers to quote. The build on
+  the runner has no CDN in front of it and no trip to Vercel's functions, which run in Washington
+  (`iad1`) and stream the cart and the filtered lists into each page, so its numbers differ.
+- **A miss is a warning for now.** LCP and CLS still miss on some pages. Once they pass, the
+  budgets in `storefront/lighthouserc.cjs` become errors, and a change that slows a page fails its
+  pull request.
+- **The job summary shows the medians**, with a link to each page's full report. The links last a
+  few days; the run's artifact keeps the reports.
+- **Lighthouse is not in `package.json`.** `npm run lighthouse` fetches a pinned `@lhci/cli` with
+  `npx`, so its dependencies stay out of every `npm ci` and out of the lockfile's audit. With
+  `LIGHTHOUSE_SITE=https://plainweft.vercel.app` it audits the live site instead of the build.
+
 ## Project layout
 
 ```
@@ -285,6 +316,8 @@ storefront/
 │   ├── lib/            # Storefront API client and queries, cart actions, variant and filter logic, money
 │   └── proxy.ts        # sends a URL without a language to the shopper's own
 ├── generated/          # GraphQL types from codegen
+├── scripts/            # Lighthouse CI's results as a table
+├── lighthouserc.cjs    # Lighthouse CI: pages, runs and budgets
 └── test/
 ```
 
