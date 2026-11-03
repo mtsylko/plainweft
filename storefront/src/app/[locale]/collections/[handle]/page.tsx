@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { BrowseListing } from "@/components/collection/browse-listing";
+import { BrowseListing, BrowseListingPlaceholder } from "@/components/collection/browse-listing";
 import { formatPlural } from "@/i18n/format";
 import { localePath } from "@/i18n/locales";
 import { alternates, openGraph } from "@/i18n/metadata";
@@ -49,7 +49,7 @@ export default async function CollectionPage({
         <CollectionHeading handle={handle} />
       </Suspense>
       {/* The heading is prerendered; the products depend on the query, so they render per request. */}
-      <Suspense fallback={<p>{loading}</p>}>
+      <Suspense fallback={<BrowseListingPlaceholder />}>
         <CollectionProducts handle={handle} query={searchParams.then(toSearchParams)} />
       </Suspense>
     </section>

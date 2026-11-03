@@ -26,8 +26,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function SearchPage({ searchParams }: PageProps<"/[locale]/search">) {
-  const [locale, dictionary] = await Promise.all([getLocale(), getDictionary()]);
-  const { search: words } = dictionary;
+  const [locale, { search: words }] = await Promise.all([getLocale(), getDictionary()]);
   const path = localePath(locale, "/search");
 
   return (
@@ -44,9 +43,13 @@ export default async function SearchPage({ searchParams }: PageProps<"/[locale]/
       <div className="enter [--enter-step:2]">
         <SearchField path={path} />
       </div>
-      {/* The box is prerendered; the results depend on the query, so they render per request. */}
+      {/*
+        The box is prerendered; the results depend on the query, so they render per request. Until
+        then the page shows what it shows with no query, so a visit from the header's link is whole
+        in its first paint, and nothing below moves when the query turns out to be empty.
+      */}
       <div className="mt-8">
-        <Suspense fallback={<p>{dictionary.loading}</p>}>
+        <Suspense fallback={<Suggestions path={path} />}>
           <SearchResults path={path} query={searchParams.then(toSearchParams)} />
         </Suspense>
       </div>

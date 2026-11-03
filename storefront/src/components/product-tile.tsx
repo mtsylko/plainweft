@@ -106,3 +106,25 @@ export async function ProductTile({
     </li>
   );
 }
+
+/**
+ * A tile's field and the room for its caption, with no product on it yet. It takes the tile's place
+ * in the grid, so a list that is still loading holds the space its tiles will fill.
+ */
+export function TilePlaceholder({ index, double = false }: { index: number; double?: boolean }) {
+  return (
+    <li
+      className={`grid grid-rows-subgrid pb-8 ${double ? "col-span-2 row-span-4" : "row-span-2"}`}
+    >
+      <div
+        className={`aspect-[4/5] ${double ? "row-span-3 place-self-stretch" : ""} ${fieldFor(index)}`}
+      />
+      {/* The caption's lines: name, price and fabric. */}
+      <div className="pt-3">
+        <div className="h-lh" />
+        <div className="h-lh" />
+        <div className="mt-1 h-lh text-small" />
+      </div>
+    </li>
+  );
+}

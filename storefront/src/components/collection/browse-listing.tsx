@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ProductCardFragment } from "../../../generated/storefront.generated";
-import { Catalogue } from "@/components/catalogue";
+import { Catalogue, CataloguePlaceholder } from "@/components/catalogue";
 import { getDictionary } from "@/i18n/server";
 import {
   DEFAULT_SORT,
@@ -66,6 +66,26 @@ export async function BrowseListing({ path, browse, listing, status }: BrowseLis
           <p className="max-w-[40ch] pb-section text-lead">{words.empty}</p>
         )}
       </div>
+    </div>
+  );
+}
+
+/**
+ * A collection's listing while its products load: room for the filters and the count, then the
+ * grid's first tiles as bare fields. The footer starts below it, so it stays put when they arrive.
+ */
+export async function BrowseListingPlaceholder() {
+  const { loading } = await getDictionary();
+  return (
+    <div>
+      <p className="sr-only">{loading}</p>
+      {/* The form's legend and fields, and the count line under them. */}
+      <div aria-hidden="true">
+        <div className="mb-3 h-lh" />
+        <div className="h-12" />
+        <div className="mt-8 mb-6 h-lh" />
+      </div>
+      <CataloguePlaceholder />
     </div>
   );
 }

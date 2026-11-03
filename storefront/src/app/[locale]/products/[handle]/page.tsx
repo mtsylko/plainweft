@@ -24,6 +24,10 @@ import {
 
 const RELATED_COUNT = 4;
 
+// The product renders without a Suspense fallback (see ProductPage), so a link to it waits for the
+// page's static payload instead of showing a fallback first. Without this, Next.js flags the wait.
+export const instant = false;
+
 export async function generateStaticParams() {
   const products = await getProductHandles();
   return products.map(({ handle }) => ({ handle }));
@@ -55,17 +59,16 @@ export async function generateMetadata({
 }
 
 export default async function ProductPage({ params }: PageProps<"/[locale]/products/[handle]">) {
-  const { loading } = await getDictionary();
-  return (
-    <Suspense fallback={<p className="px-gutter py-section">{loading}</p>}>
-      <ProductDetails handle={params.then((p) => p.handle)} />
-    </Suspense>
-  );
+  // No Suspense around the product: every handle is prerendered, so there is nothing to wait for.
+  // React holds a finished boundary this big (past its 12.8 kB chunk) out of the first paint and
+  // swaps it in about 300 ms later, so the page showed a fallback first and the footer jumped.
+  const { handle } = await params;
+  return <ProductDetails handle={handle} />;
 }
 
-async function ProductDetails({ handle }: { handle: Promise<string> }) {
+async function ProductDetails({ handle }: { handle: string }) {
   const [product, locale, dictionary] = await Promise.all([
-    handle.then(getProduct),
+    getProduct(handle),
     getLocale(),
     getDictionary(),
   ]);
