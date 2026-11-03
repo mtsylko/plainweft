@@ -282,9 +282,20 @@ two places, as each answers its own question:
   which can also be run by hand from the Actions tab. These are the numbers to quote. The build on
   the runner has no CDN in front of it and no trip to Vercel's functions, which run in Washington
   (`iad1`) and stream the cart and the filtered lists into each page, so its numbers differ.
-- **A miss is a warning for now.** LCP and CLS still miss on some pages. Once they pass, the
+- **A miss is a warning for now.** LCP still misses on some pages. Once they pass, the
   budgets in `storefront/lighthouserc.cjs` become errors, and a change that slows a page fails its
   pull request.
+- **The first screen asks for nothing it doesn't need.** Roundo is served from the site itself
+  with `next/font/local` (it is under the SIL Open Font License, `src/app/fonts/OFL.txt`): from
+  Fontshare it was a render-blocking stylesheet on one more origin and its files on another. The
+  home page's photo and a list's first tile are fetched with high priority, and the home page's
+  grid, below the photo, doesn't hurry its tiles. The icon is a 108-byte PNG. Text that rises in
+  on load starts at 1% opacity, not 0, because Chrome never counts an element first painted
+  invisible as the LCP.
+- **On a phone, product and collection pages still miss 2.5 s in the lab.** Lighthouse's phone
+  model counts every byte fetched before the LCP, and by the time their picture arrives from
+  Shopify's CDN, about 320 KB have started, 160 KB of them JavaScript. The home page, whose
+  photo is served from the site itself, passes.
 - **The job summary shows the medians**, with a link to each page's full report. The links last a
   few days; the run's artifact keeps the reports.
 - **Lighthouse is not in `package.json`.** `npm run lighthouse` fetches a pinned `@lhci/cli` with
@@ -311,6 +322,7 @@ storefront/
 ├── src/
 │   ├── app/[locale]/   # routes per language: home, collections/[handle], products/[handle], search
 │   ├── app/api/        # revalidate: takes Shopify's webhooks and expires the cached catalog
+│   ├── app/fonts/      # Roundo, served from the site, with its licence
 │   ├── components/     # tiles, catalogue grid, filter form, search box, product picker, cart drawer, home sections
 │   ├── i18n/           # locales, dictionaries, message formatting
 │   ├── lib/            # Storefront API client and queries, cart actions, variant and filter logic, money

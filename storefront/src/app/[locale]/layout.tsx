@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import localFont from "next/font/local";
 import { CartProvider } from "@/components/cart/cart-context";
 import { CartDrawer } from "@/components/cart/cart-drawer";
 import { Footer } from "@/components/footer";
@@ -10,6 +11,22 @@ import { openGraph, SITE_URL } from "@/i18n/metadata";
 import { getDictionary, getLocale } from "@/i18n/server";
 import { getCart } from "@/lib/cart/get-cart";
 import "../globals.css";
+
+/**
+ * Roundo, served from this site (SIL OFL, see `fonts/OFL.txt`). From Fontshare it took a
+ * render-blocking stylesheet and two more origins before the first paint: on Lighthouse's phone
+ * that paint came at 1.5 s, and at 0.9 s from here. Next.js preloads these files and sizes a
+ * fallback to match them.
+ */
+const ROUNDO = localFont({
+  src: [
+    { path: "../fonts/roundo-regular.woff2", weight: "400" },
+    { path: "../fonts/roundo-medium.woff2", weight: "500" },
+    { path: "../fonts/roundo-semibold.woff2", weight: "600" },
+  ],
+  variable: "--font-roundo",
+  display: "swap",
+});
 
 /** Every page prerenders once per language. */
 export function generateStaticParams() {
@@ -34,15 +51,7 @@ export default async function RootLayout({ children }: LayoutProps<"/[locale]">)
   const dictionary = dictionaryFor(locale);
 
   return (
-    <html lang={locale}>
-      <head>
-        <link rel="preconnect" href="https://api.fontshare.com" />
-        <link rel="preconnect" href="https://cdn.fontshare.com" crossOrigin="" />
-        <link
-          rel="stylesheet"
-          href="https://api.fontshare.com/v2/css?f[]=roundo@400,500,600&display=swap"
-        />
-      </head>
+    <html lang={locale} className={ROUNDO.variable}>
       <body>
         <I18nProvider locale={locale} dictionary={dictionary}>
           {/* Not awaited: the cart streams in wherever it is read, and the rest stays static. */}

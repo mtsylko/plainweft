@@ -47,7 +47,8 @@ export default async function Home() {
             {home.catalogueLead}
           </p>
         </div>
-        <Catalogue products={products} />
+        {/* Under the hero: on a phone its first tiles would take the bandwidth the photo needs. */}
+        <Catalogue products={products} belowTheFold />
       </section>
 
       <ColourFinder colours={groupByColour(colourIndex).slice(0, COLOURS_SHOWN)} />

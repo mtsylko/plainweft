@@ -13,7 +13,7 @@ const PORT = 3900;
 // One page of each kind the store renders.
 const PAGES = ["/en", "/en/collections/tees", "/en/products/heavyweight-boxy-tee"];
 
-// Warnings, not failures, while LCP and CLS still miss on some pages: a budget the store doesn't
+// Warnings, not failures, while LCP still misses on some pages: a budget the store doesn't
 // meet yet would turn every run red. Once they pass, "error" makes a slower change fail its PR.
 const LEVEL = "warn";
 

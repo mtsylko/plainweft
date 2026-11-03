@@ -18,7 +18,8 @@
   /* The flat ground the catalogue photos are rendered on, in seed/scripts/garments.ts. */
   --color-backdrop: #ece9e4;
 
-  --font-sans: "Roundo", ui-rounded, system-ui, sans-serif;
+  /* --font-roundo comes from next/font in the root layout, with a fallback sized to match. */
+  --font-sans: var(--font-roundo), ui-rounded, system-ui, sans-serif;
 
   /* The sizes the whole site uses. Title is for the home page's one headline. */
   --text-small: 1rem;
@@ -143,9 +144,14 @@
   text-box: trim-start cap alphabetic;
 }
 
+/*
+  Not quite transparent at the start: Chrome never counts an element first painted at opacity 0 as
+  the Largest Contentful Paint, even once it shows. A heading or text that rises in would then
+  give way to whatever streams in later, as the sort control did on a collection page.
+*/
 @keyframes rise {
   from {
-    opacity: 0;
+    opacity: 0.01;
     transform: translateY(24px);
   }
 }

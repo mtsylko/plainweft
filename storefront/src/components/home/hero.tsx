@@ -34,8 +34,18 @@ export async function Hero({ collections }: HeroProps) {
         {/*
           A soft photo, 43 KB at 2560 px, so it ships as one file. The loader only resizes
           Shopify's images, and unoptimized says so instead of a srcset of identical URLs.
+          It is the home page's LCP. With `preload` the HTML carried neither a preload nor a
+          priority for it, so phones fetched it at low priority behind the scripts.
         */}
-        <Image src={mistyHills} alt="" fill preload unoptimized className="object-cover" />
+        <Image
+          src={mistyHills}
+          alt=""
+          fill
+          loading="eager"
+          fetchPriority="high"
+          unoptimized
+          className="object-cover"
+        />
       </div>
 
       <div className="grid gap-x-8 gap-y-5 bg-ink p-5 text-ground md:absolute md:bottom-6 md:left-1/2 md:w-[min(64rem,calc(100%-2*var(--spacing-gutter)))] md:-translate-x-1/2 md:grid-cols-[1fr_auto] md:items-end md:p-8">

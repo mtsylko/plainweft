@@ -15,6 +15,8 @@ interface ProductTileProps {
   double?: boolean;
   /** Tiles above the fold load first. */
   eager?: boolean;
+  /** The grid's first picture on the first screen, likely the page's LCP: it goes ahead of the rest. */
+  lead?: boolean;
   /** For a tile on the first screen: it enters with the page at this step, instead of on scroll. */
   enterStep?: number;
   /** One level below the heading of the list the tile sits in. */
@@ -33,6 +35,7 @@ export async function ProductTile({
   index,
   double = false,
   eager = false,
+  lead = false,
   enterStep,
   heading: Heading = "h3",
 }: ProductTileProps) {
@@ -74,6 +77,7 @@ export async function ProductTile({
               fill
               sizes={sizes}
               loading={eager ? "eager" : "lazy"}
+              fetchPriority={lead ? "high" : "auto"}
               className={`${double ? "object-contain bg-backdrop" : "object-cover"} mix-blend-multiply transition-transform duration-500 ease-out-expo group-hover:scale-[1.04]`}
             />
           )}
