@@ -140,15 +140,21 @@ plainly. The tokens live in `@theme` in `src/app/globals.css`; there is no `tail
   `text-lead` and `text-head`, plus `text-title` for the home page's one headline and
   `text-display` for the footer's wordmark. Tailwind's `text-sm`, `text-lg` and the rest are
   unused; keep it that way. Headings are `font-medium` in the one font, Roundo.
+- **Roundo is served from the site**: `next/font/local` in the root layout loads the files in
+  `src/app/fonts` (SIL OFL, `OFL.txt` beside them). No stylesheets or fonts from other sites: each
+  one blocked the first paint and cost a phone two more connections.
 - **Spacing**: Tailwind's scale for small steps, `px-gutter` for the page's side padding, and
   `pt-section` or `mt-section` between sections.
 - **Flat and square**: no shadows and no rounded corners. The colour finder's round lens is the
   one exception.
 - **Product pictures** use `next/image` with `fill` and honest `sizes`, `mix-blend-multiply` over
-  a field from `fieldFor(index)`, so the photo's ground melts into the field.
+  a field from `fieldFor(index)`, so the photo's ground melts into the field. The picture that is
+  likely the page's LCP gets `fetchPriority="high"` (the gallery's lead, a list's first tile, the
+  hero); a grid below the first screen loads lazily (`belowTheFold`).
 - **Motion**: `.rise` for scroll entrances, `.enter` with `--enter-step` for the first screen, and
   `ease-out-expo`. Add `.rise-even` where neighbours differ in height, as tiles in a row do, so
-  they rise together. All of it sits behind `prefers-reduced-motion`. Nothing moves on its own without
+  they rise together. `rise` starts at 1% opacity, not 0: Chrome never counts an element first
+  painted at 0 as the LCP. All of it sits behind `prefers-reduced-motion`. Nothing moves on its own without
   a way to pause it (WCAG 2.2.2).
 - **Boxes that hold text grow with it**: `min-h-*` and `minmax(…,auto)` grid rows, never a fixed
   `h-*` or `overflow-hidden` around text. Polish copy, laptops from 1024px and a reader's own text
