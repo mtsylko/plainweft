@@ -2,7 +2,13 @@ import { describe, expect, it } from "vitest";
 import { en } from "../src/i18n/dictionaries/en";
 import { pl } from "../src/i18n/dictionaries/pl";
 import { format, formatPlural } from "../src/i18n/format";
-import { hasLocale, localePath, negotiateLocale } from "../src/i18n/locales";
+import {
+  collectionPath,
+  hasLocale,
+  localePath,
+  negotiateLocale,
+  productPath,
+} from "../src/i18n/locales";
 
 describe("negotiateLocale", () => {
   it("picks the shopper's most wanted language that the store has", () => {
@@ -35,6 +41,15 @@ describe("locales", () => {
     expect(localePath("pl", "/")).toBe("/pl");
     expect(localePath("en", "/products/x")).toBe("/en/products/x");
     expect(localePath("en", "/#catalogue")).toBe("/en/#catalogue");
+  });
+
+  it("builds product and collection paths, a product's with its variant", () => {
+    expect(productPath("tee")).toBe("/products/tee");
+    expect(productPath("tee", new URLSearchParams({ color: "black", size: "m" }))).toBe(
+      "/products/tee?color=black&size=m",
+    );
+    expect(productPath("tee", new URLSearchParams())).toBe("/products/tee");
+    expect(collectionPath("all")).toBe("/collections/all");
   });
 });
 

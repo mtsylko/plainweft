@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { STORE_NAME } from "@/lib/site";
 import { LOCALES, localePath, type Locale } from "./locales";
 
 /**
@@ -32,7 +33,7 @@ export function alternates(locale: Locale, path = ""): Metadata["alternates"] {
  */
 export function openGraph(locale: Locale) {
   return {
-    siteName: "Plainweft",
+    siteName: STORE_NAME,
     type: "website",
     locale: OPEN_GRAPH_LOCALES[locale],
     alternateLocale: LOCALES.filter((other) => other !== locale).map(

@@ -2,14 +2,24 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Suspense, use, useEffect, useOptimistic, useRef, useState, useTransition } from "react";
+import {
+  Suspense,
+  use,
+  useEffect,
+  useId,
+  useOptimistic,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
 import { format } from "@/i18n/format";
 import { useI18n } from "@/i18n/i18n-context";
-import { localePath } from "@/i18n/locales";
+import { localePath, productPath } from "@/i18n/locales";
 import { setLineQuantity } from "@/lib/cart/actions";
+import { formatMoney, scaleTotal, sumMoney } from "@/lib/money";
 import { selectionToParams } from "@/lib/product/variants";
-import { formatMoney } from "@/lib/money";
 import type { CartLine } from "@/lib/shopify/cart";
+import { buttonClass } from "../button";
 import { useCart } from "./cart-context";
 
 export function CartDrawer() {
@@ -17,6 +27,7 @@ export function CartDrawer() {
   const { cart } = useI18n().dictionary;
   const dialog = useRef<HTMLDialogElement>(null);
   const title = useRef<HTMLHeadingElement>(null);
+  const titleId = useId();
   // What the last change did, for screen readers. The region stays mounted, even when the bag
   // empties, so each new message is read out.
   const [announcement, setAnnouncement] = useState("");
@@ -39,7 +50,7 @@ export function CartDrawer() {
       onClick={(event) => {
         if (event.target === event.currentTarget) close();
       }}
-      aria-labelledby="cart-title"
+      aria-labelledby={titleId}
       className="fixed inset-y-0 right-0 left-auto m-0 h-dvh max-h-none w-full max-w-md bg-ground p-0 text-ink backdrop:bg-ink/40 open:flex"
     >
       <div className="flex w-full flex-col">
@@ -47,7 +58,7 @@ export function CartDrawer() {
           {/* Focus lands here when the line that held it is removed. */}
           <h2
             ref={title}
-            id="cart-title"
+            id={titleId}
             tabIndex={-1}
             className="text-lead font-medium focus-visible:outline-none"
           >
@@ -115,13 +126,19 @@ function CartContents({
         <Link
           href={localePath(locale, "/#catalogue")}
           onClick={close}
-          className="mt-6 inline-block bg-ink px-6 py-3 font-medium text-ground transition-colors hover:bg-accent hover:text-accent-ink active:scale-[0.98]"
+          className={`${buttonClass()} mt-6 inline-block px-6 py-3`}
         >
           {dictionary.shopTheBasics}
         </Link>
       </div>
     );
   }
+
+  // Added up from the lines, so it follows an optimistic change before Shopify's own arrives.
+  const subtotal = sumMoney(
+    lines.map((line) => line.cost.totalAmount),
+    cart.cost.subtotalAmount.currencyCode,
+  );
 
   return (
     <>
@@ -136,7 +153,7 @@ function CartContents({
         <dl className="flex items-baseline justify-between text-lead">
           <dt>{dictionary.cart.subtotal}</dt>
           <dd className={`tabular-nums ${isPending ? "opacity-50" : ""}`}>
-            {formatMoney(subtotal(lines, cart.cost.subtotalAmount.currencyCode))}
+            {formatMoney(subtotal)}
           </dd>
         </dl>
         <p className="mt-1 text-small text-muted">{dictionary.cart.taxesAtCheckout}</p>
@@ -147,7 +164,7 @@ function CartContents({
           onClick={(event) => {
             if (isPending) event.preventDefault();
           }}
-          className="mt-5 block bg-accent px-6 py-4 text-center font-medium text-accent-ink transition-colors hover:bg-accent-strong active:scale-[0.98] aria-disabled:pointer-events-none aria-disabled:opacity-60"
+          className={`${buttonClass("accent")} mt-5 block px-6 py-4 text-center aria-disabled:pointer-events-none aria-disabled:opacity-60`}
         >
           {dictionary.cart.checkOut}
         </a>
@@ -190,7 +207,7 @@ function CartLineItem({
       <div className="flex flex-1 flex-col">
         <div className="flex items-baseline justify-between gap-4">
           <Link
-            href={`${localePath(locale, `/products/${product.handle}`)}?${params}`}
+            href={localePath(locale, productPath(product.handle, params))}
             onClick={onNavigate}
             className="font-medium underline-offset-4 hover:underline"
           >
@@ -252,12 +269,6 @@ function QuantityButton({
 
 /** Scales the line total with the quantity, so an optimistic change shows the right price. */
 function withQuantity(line: CartLine, quantity: number): CartLine {
-  const unit = Number(line.cost.totalAmount.amount) / line.quantity;
-  const amount = (unit * quantity).toFixed(2);
-  return { ...line, quantity, cost: { totalAmount: { ...line.cost.totalAmount, amount } } };
-}
-
-function subtotal(lines: CartLine[], currencyCode: string) {
-  const amount = lines.reduce((sum, line) => sum + Number(line.cost.totalAmount.amount), 0);
-  return { amount: amount.toFixed(2), currencyCode };
+  const totalAmount = scaleTotal(line.cost.totalAmount, line.quantity, quantity);
+  return { ...line, quantity, cost: { ...line.cost, totalAmount } };
 }

@@ -1,11 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
+  COLOR_OPTION,
   isValueAvailable,
+  optionValue,
   orderGallery,
   resolveSelection,
   selectedVariant,
   selectionToParams,
   slugify,
+  variantWith,
   type VariantLike,
 } from "../src/lib/product/variants";
 
@@ -105,6 +108,18 @@ describe("isValueAvailable", () => {
   it("checks a size against the chosen colour", () => {
     expect(check({ Color: "Black" }, "Size", "S")).toBe(true);
     expect(check({ Color: "Black" }, "Size", "M")).toBe(false);
+  });
+});
+
+describe("variantWith", () => {
+  it("finds the first variant with the value", () => {
+    expect(variantWith(variants, COLOR_OPTION, "Black")?.id).toBe("Black-S");
+    expect(optionValue(variantWith(variants, "Size", "M"), COLOR_OPTION)).toBe("Heather Grey");
+  });
+
+  it("finds nothing for a value no variant has, or none at all", () => {
+    expect(variantWith(variants, COLOR_OPTION, "Ecru")).toBeUndefined();
+    expect(variantWith(variants, COLOR_OPTION, undefined)).toBeUndefined();
   });
 });
 

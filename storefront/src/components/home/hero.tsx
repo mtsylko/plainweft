@@ -2,9 +2,10 @@ import Image from "next/image";
 import Link from "next/link";
 import type { CollectionsQuery } from "../../../generated/storefront.generated";
 import { format } from "@/i18n/format";
-import { localePath } from "@/i18n/locales";
+import { collectionPath, localePath } from "@/i18n/locales";
 import { getDictionary, getLocale } from "@/i18n/server";
 import { formatMoney, lowestPrice } from "@/lib/money";
+import { buttonClass } from "../button";
 import mistyHills from "./misty-hills.webp";
 
 type Collection = CollectionsQuery["collections"]["nodes"][number];
@@ -12,12 +13,6 @@ type Collection = CollectionsQuery["collections"]["nodes"][number];
 interface HeroProps {
   collections: readonly Collection[];
 }
-
-/** Who took the hero photo, for the credit in the footer. */
-export const HERO_PHOTO_CREDIT = {
-  author: "Francesco Gallarotti",
-  url: "https://unsplash.com/photos/-HkuuUSY1pE",
-};
 
 /** A quiet landscape under one panel that says what the store is. */
 export async function Hero({ collections }: HeroProps) {
@@ -43,10 +38,7 @@ export async function Hero({ collections }: HeroProps) {
           {home.heroTitle}
         </h1>
         <p className="max-w-[36ch] text-lead text-pretty">{home.heroLead}</p>
-        <Link
-          href="#catalogue"
-          className="bg-ground px-6 py-3 text-center font-medium text-ink transition-colors hover:bg-ecru active:scale-[0.98]"
-        >
+        <Link href="#catalogue" className={`${buttonClass("ground")} px-6 py-3 text-center`}>
           {dictionary.shopTheBasics}
         </Link>
         <ul className="flex flex-wrap gap-x-6 gap-y-1 text-small md:col-span-2">
@@ -57,7 +49,7 @@ export async function Hero({ collections }: HeroProps) {
             return (
               <li key={collection.handle}>
                 <Link
-                  href={localePath(locale, `/collections/${collection.handle}`)}
+                  href={localePath(locale, collectionPath(collection.handle))}
                   className="underline-offset-4 hover:underline"
                 >
                   {from

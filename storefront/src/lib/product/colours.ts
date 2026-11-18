@@ -1,4 +1,4 @@
-import { slugify, type SelectedOption } from "./variants";
+import { COLOR_OPTION, optionValue, slugify, type SelectedOption } from "./variants";
 
 interface ColourSource<I> {
   handle: string;
@@ -22,14 +22,14 @@ export interface ColourEntry<I> {
 /** Every in-stock colour across the catalogue, the ones shared by most products first. */
 export function groupByColour<I>(
   products: readonly ColourSource<I>[],
-  optionName = "Color",
+  optionName = COLOR_OPTION,
 ): ColourEntry<I>[] {
   const byName = new Map<string, ColourEntry<I>>();
 
   for (const product of products) {
     const seen = new Set<string>();
     for (const variant of product.variants.nodes) {
-      const name = variant.selectedOptions.find((option) => option.name === optionName)?.value;
+      const name = optionValue(variant, optionName);
       if (!name || seen.has(name) || !variant.availableForSale || !variant.image) continue;
       seen.add(name);
 

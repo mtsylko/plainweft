@@ -1,13 +1,13 @@
 import Image from "next/image";
+import type { ReactNode } from "react";
+import type { ImageFragment } from "../../../generated/storefront.generated";
 import { getDictionary } from "@/i18n/server";
-
-type Picture = { url: string; altText?: string | null };
 
 /**
  * What the garments are made of, as a board of unlike tiles. The copy restates the catalogue:
  * fabric weights, descriptions and care steps from seed/catalog/products.ts.
  */
-export async function Mosaic({ pictures }: { pictures: readonly [Picture, Picture] }) {
+export async function Mosaic({ pictures }: { pictures: readonly [ImageFragment, ImageFragment] }) {
   const [large, wide] = pictures;
   const { home } = await getDictionary();
 
@@ -71,6 +71,6 @@ export async function Mosaic({ pictures }: { pictures: readonly [Picture, Pictur
 }
 
 /** A text tile stays unclipped, so a square one grows taller rather than cut its text off. */
-function Tile({ className, children }: { className: string; children: React.ReactNode }) {
+function Tile({ className, children }: { className: string; children: ReactNode }) {
   return <div className={`rise relative ${className}`}>{children}</div>;
 }

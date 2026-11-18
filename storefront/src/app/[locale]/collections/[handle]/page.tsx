@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { BrowseListing, BrowseListingPlaceholder } from "@/components/collection/browse-listing";
+import { PageIntro } from "@/components/page-intro";
 import { formatPlural } from "@/i18n/format";
-import { localePath } from "@/i18n/locales";
+import { collectionPath, localePath } from "@/i18n/locales";
 import { alternates, openGraph } from "@/i18n/metadata";
 import { getDictionary, getLocale } from "@/i18n/server";
 import { readBrowse, toSearchParams } from "@/lib/product/browse";
@@ -32,7 +33,7 @@ export async function generateMetadata({
     title,
     description,
     // Filtered addresses point search engines at the collection itself.
-    alternates: alternates(locale, `/collections/${handle}`),
+    alternates: alternates(locale, collectionPath(handle)),
     openGraph: { ...openGraph(locale), title, description },
   };
 }
@@ -61,16 +62,12 @@ async function CollectionHeading({ handle }: { handle: Promise<string> }) {
   if (!collection) notFound();
 
   return (
-    // The description starts where the grid's third column does, and its capitals start level with
-    // the title's, so a longer description grows downwards instead of rising above the title.
-    <div className="mb-12 grid gap-4 lg:grid-cols-12 lg:items-start lg:gap-2">
-      <h1 id="collection-title" className="enter text-head font-medium lg:col-span-6 lg:trim-cap">
-        {collection.title}
-      </h1>
-      <p className="enter max-w-[40ch] text-lead text-pretty [--enter-step:1] lg:col-span-6 lg:col-start-7 lg:trim-cap">
-        {collection.description}
-      </p>
-    </div>
+    <PageIntro
+      id="collection-title"
+      title={collection.title}
+      lead={collection.description}
+      className="mb-12"
+    />
   );
 }
 
@@ -92,7 +89,7 @@ async function CollectionProducts({
 
   return (
     <BrowseListing
-      path={localePath(locale, `/collections/${await handle}`)}
+      path={localePath(locale, collectionPath(await handle))}
       browse={browse}
       listing={listing}
       status={formatPlural(locale, words.results, listing.nodes.length)}

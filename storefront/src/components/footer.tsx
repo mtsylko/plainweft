@@ -2,18 +2,15 @@ import Link from "next/link";
 import { format } from "@/i18n/format";
 import { localePath } from "@/i18n/locales";
 import { getDictionary, getLocale } from "@/i18n/server";
-import { ALL_COLLECTION, getCollections } from "@/lib/shopify/catalog";
-import { HERO_PHOTO_CREDIT } from "./home/hero";
+import { HERO_PHOTO_CREDIT, STORE_NAME } from "@/lib/site";
+import { CollectionLinks } from "./collection-links";
+import { ArrowUpRightIcon } from "./icons";
 
 const REPOSITORY = "https://github.com/mtsylko/plainweft";
 
 /** The close of the page: the last two rows of the specimen board. */
 export async function Footer() {
-  const [collections, locale, dictionary] = await Promise.all([
-    getCollections(),
-    getLocale(),
-    getDictionary(),
-  ]);
+  const [locale, dictionary] = await Promise.all([getLocale(), getDictionary()]);
   const { footer } = dictionary;
 
   return (
@@ -39,26 +36,7 @@ export async function Footer() {
         aria-label={footer.label}
         className="rise order-3 bg-oatmeal p-5 lg:order-none lg:col-span-3 lg:min-h-56 lg:p-6"
       >
-        <ul className="space-y-1">
-          <li>
-            <Link
-              href={localePath(locale, `/collections/${ALL_COLLECTION}`)}
-              className="underline-offset-4 hover:underline"
-            >
-              {dictionary.layout.allBasics}
-            </Link>
-          </li>
-          {collections.map((collection) => (
-            <li key={collection.handle}>
-              <Link
-                href={localePath(locale, `/collections/${collection.handle}`)}
-                className="underline-offset-4 hover:underline"
-              >
-                {collection.title}
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <CollectionLinks className="space-y-1" />
       </nav>
 
       <p className="rise order-5 col-span-2 bg-sage p-5 md:col-span-1 lg:order-none lg:col-span-2 lg:min-h-56 lg:p-6">
@@ -75,7 +53,7 @@ export async function Footer() {
         aria-hidden="true"
         className="rise order-1 col-span-2 flex min-h-40 items-center justify-center overflow-hidden bg-ink text-display font-medium text-ground lg:order-none lg:col-span-8 lg:min-h-80"
       >
-        Plainweft
+        {STORE_NAME}
       </p>
 
       <Link
@@ -83,16 +61,7 @@ export async function Footer() {
         className="rise group order-2 col-span-2 flex min-h-40 flex-col justify-between bg-accent p-5 text-accent-ink transition-colors hover:bg-accent-strong lg:order-none lg:col-span-4 lg:min-h-80 lg:p-6"
       >
         <span className="text-head font-medium">{dictionary.shopTheBasics}</span>
-        <svg
-          aria-hidden="true"
-          viewBox="0 0 48 48"
-          className="size-12 self-end transition-transform duration-300 ease-out-expo group-hover:translate-x-1 group-hover:-translate-y-1"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="4"
-        >
-          <path d="M10 38 38 10M16 10h22v22" />
-        </svg>
+        <ArrowUpRightIcon className="size-12 self-end transition-transform duration-300 ease-out-expo group-hover:translate-x-1 group-hover:-translate-y-1" />
       </Link>
     </footer>
   );

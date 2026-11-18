@@ -3,18 +3,14 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { Price } from "@/components/price";
-import {
-  Gallery,
-  GalleryView,
-  Purchase,
-  PurchaseView,
-  type Product,
-} from "@/components/product/product-client";
+import { Gallery, GalleryView } from "@/components/product/gallery";
+import { Purchase, PurchaseView } from "@/components/product/purchase";
 import { ProductTile } from "@/components/product-tile";
-import { localePath } from "@/i18n/locales";
+import { collectionPath, localePath, productPath } from "@/i18n/locales";
 import { alternates, openGraph } from "@/i18n/metadata";
 import { getDictionary, getLocale } from "@/i18n/server";
-import { resolveSelection } from "@/lib/product/variants";
+import { parseList, productJsonLd } from "@/lib/product/details";
+import { COLOR_OPTION, resolveSelection } from "@/lib/product/variants";
 import {
   getCollectionProducts,
   getProduct,
@@ -54,7 +50,7 @@ export async function generateMetadata({
         images: [{ url: image.url, width: image.width ?? undefined, alt: image.altText ?? "" }],
       }),
     },
-    alternates: alternates(locale, `/products/${handle}`),
+    alternates: alternates(locale, productPath(handle)),
   };
 }
 
@@ -84,7 +80,7 @@ async function ProductDetails({ handle }: { handle: string }) {
       <article className="grid grid-cols-1 gap-x-2 gap-y-8 px-gutter pt-4 lg:grid-cols-12 lg:pt-6">
         {/* Entrances sit outside the Suspense boundaries, so they play once, not again on swap. */}
         <div className="enter lg:col-span-7">
-          <Suspense fallback={<GalleryView product={product} color={defaults.Color} />}>
+          <Suspense fallback={<GalleryView product={product} color={defaults[COLOR_OPTION]} />}>
             <Gallery product={product} />
           </Suspense>
         </div>
@@ -92,7 +88,7 @@ async function ProductDetails({ handle }: { handle: string }) {
         <div className="lg:sticky lg:top-24 lg:col-span-4 lg:col-start-9 lg:self-start">
           {collection && (
             <Link
-              href={localePath(locale, `/collections/${collection.handle}`)}
+              href={localePath(locale, collectionPath(collection.handle))}
               className="enter inline-block text-muted underline-offset-4 [--enter-step:1] hover:text-ink hover:underline"
             >
               {collection.title}
@@ -142,7 +138,10 @@ async function ProductDetails({ handle }: { handle: string }) {
 
       <Related handle={product.handle} collectionHandle={collection?.handle} />
 
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(product) }} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: productJsonLd(product) }}
+      />
     </>
   );
 }
@@ -184,37 +183,4 @@ async function Related({
       </ul>
     </section>
   );
-}
-
-/** List metafields arrive as a JSON array in a string. */
-function parseList(value: string | null | undefined): string[] {
-  if (!value) return [];
-  try {
-    const parsed: unknown = JSON.parse(value);
-    return Array.isArray(parsed) ? parsed.filter((item) => typeof item === "string") : [];
-  } catch {
-    return [];
-  }
-}
-
-function jsonLd(product: Product): string {
-  const data = {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    name: product.title,
-    description: product.description,
-    image: product.images.nodes.map((image) => image.url),
-    brand: { "@type": "Brand", name: "Plainweft" },
-    offers: product.variants.nodes.map((variant) => ({
-      "@type": "Offer",
-      sku: variant.sku,
-      price: variant.price.amount,
-      priceCurrency: variant.price.currencyCode,
-      availability: variant.availableForSale
-        ? "https://schema.org/InStock"
-        : "https://schema.org/OutOfStock",
-    })),
-  };
-  // Escaped so a "</script>" inside product text can't end the tag.
-  return JSON.stringify(data).replace(/</g, "\\u003c");
 }
