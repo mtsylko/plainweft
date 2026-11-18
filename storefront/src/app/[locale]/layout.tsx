@@ -17,6 +17,13 @@ import "../globals.css";
  * render-blocking stylesheet and two more origins before the first paint: on Lighthouse's phone
  * that paint came at 1.5 s, and at 0.9 s from here. Next.js preloads these files and sizes a
  * fallback to match them.
+ *
+ * `optional`, not `swap`: a page never changes font once it is drawn. The sized fallback still
+ * breaks lines in other places, so a swap moved the page: a two-line description became three and
+ * pushed the grid down, and at 1024px the header wrapped onto a second row. `block` moves it too,
+ * as the hidden text is laid out in the fallback. If Roundo misses the first paint (a first visit
+ * on a slow phone), the page stays in the fallback, and a later page load gets Roundo from the
+ * cache.
  */
 const ROUNDO = localFont({
   src: [
@@ -25,7 +32,7 @@ const ROUNDO = localFont({
     { path: "../fonts/roundo-semibold.woff2", weight: "600" },
   ],
   variable: "--font-roundo",
-  display: "swap",
+  display: "optional",
 });
 
 /** Every page prerenders once per language. */

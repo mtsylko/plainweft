@@ -142,7 +142,8 @@ plainly. The tokens live in `@theme` in `src/app/globals.css`; there is no `tail
   unused; keep it that way. Headings are `font-medium` in the one font, Roundo.
 - **Roundo is served from the site**: `next/font/local` in the root layout loads the files in
   `src/app/fonts` (SIL OFL, `OFL.txt` beside them). No stylesheets or fonts from other sites: each
-  one blocked the first paint and cost a phone two more connections.
+  one blocked the first paint and cost a phone two more connections. Keep `display: "optional"`:
+  with `swap` or `block`, a late Roundo breaks lines in other places and moves the page.
 - **Spacing**: Tailwind's scale for small steps, `px-gutter` for the page's side padding, and
   `pt-section` or `mt-section` between sections.
 - **Flat and square**: no shadows and no rounded corners. The colour finder's round lens is the
