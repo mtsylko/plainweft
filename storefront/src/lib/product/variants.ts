@@ -14,6 +14,9 @@ export interface OptionLike {
   optionValues: readonly { name: string }[];
 }
 
+/** The colour option's name. Option names stay English in Shopify; their labels come from the dictionary. */
+export const COLOR_OPTION = "Color";
+
 /** Option name to value, e.g. { Color: "Black", Size: "M" }. A missing key is not chosen yet. */
 export type Selection = Readonly<Record<string, string>>;
 
@@ -64,7 +67,7 @@ export function resolveSelection(
         ? option.optionValues[0]?.name
         : CHOSEN_BY_SHOPPER.has(option.name.toLowerCase())
           ? undefined
-          : valueOf(fallback, option.name);
+          : optionValue(fallback, option.name);
 
     const value = fromUrl ?? preset;
     if (value) selection[option.name] = value;
@@ -102,9 +105,19 @@ export function isValueAvailable(
   return variants.some(
     (variant) =>
       variant.availableForSale &&
-      valueOf(variant, optionName) === value &&
-      earlier.every((name) => !selection[name] || valueOf(variant, name) === selection[name]),
+      optionValue(variant, optionName) === value &&
+      earlier.every((name) => !selection[name] || optionValue(variant, name) === selection[name]),
   );
+}
+
+/** The first variant with this value, as the first black one: its picture shows that colour. */
+export function variantWith<V extends VariantLike>(
+  variants: readonly V[],
+  optionName: string,
+  value: string | undefined,
+): V | undefined {
+  if (!value) return undefined;
+  return variants.find((variant) => optionValue(variant, optionName) === value);
 }
 
 /** Puts the images of the chosen color first, keeping the rest in their original order. */
@@ -114,8 +127,7 @@ export function orderGallery<I extends { url: string }>(
   optionName: string,
   value: string | undefined,
 ): I[] {
-  const url = variants.find((variant) => value && valueOf(variant, optionName) === value)?.image
-    ?.url;
+  const url = variantWith(variants, optionName, value)?.image?.url;
   const first = images.find((image) => image.url === url);
   return first ? [first, ...images.filter((image) => image !== first)] : [...images];
 }
@@ -124,6 +136,10 @@ function defaultVariant<V extends VariantLike>(variants: readonly V[]): V | unde
   return variants.find((variant) => variant.availableForSale) ?? variants[0];
 }
 
-function valueOf(variant: VariantLike | undefined, optionName: string): string | undefined {
+/** The variant's value for one option, as "Black" for Color. */
+export function optionValue(
+  variant: Pick<VariantLike, "selectedOptions"> | undefined,
+  optionName: string,
+): string | undefined {
   return variant?.selectedOptions.find((option) => option.name === optionName)?.value;
 }

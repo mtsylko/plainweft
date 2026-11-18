@@ -1,15 +1,9 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import {
-  startTransition,
-  Suspense,
-  useEffect,
-  useOptimistic,
-  useRef,
-  useState,
-  type FormEvent,
-} from "react";
+import { Suspense, useEffect, useRef, useState, useTransition, type FormEvent } from "react";
+import { buttonClass } from "@/components/button";
+import { CloseIcon, SearchIcon } from "@/components/icons";
 import { useI18n } from "@/i18n/i18n-context";
 import {
   cleanTerms,
@@ -50,7 +44,7 @@ function SearchForm({ path, terms }: SearchFieldProps & { terms: string }) {
   const router = useRouter();
   const words = useI18n().dictionary.search;
   const [value, setValue] = useState(terms);
-  const [pending, setPending] = useOptimistic(false);
+  const [pending, startTransition] = useTransition();
   // The last terms this box asked for, and the last ones the URL had.
   const [sent, setSent] = useState(terms);
   const [seen, setSeen] = useState(terms);
@@ -76,7 +70,6 @@ function SearchForm({ path, terms }: SearchFieldProps & { terms: string }) {
     if (next === sent) return;
     setSent(next);
     startTransition(() => {
-      setPending(true);
       // New terms start without filters, which might leave nothing of them. The history entry is
       // replaced: a pause in typing isn't a page to go back to.
       router.replace(`${path}${searchFor(defaultBrowse("search", next))}`, { scroll: false });
@@ -109,20 +102,10 @@ function SearchForm({ path, terms }: SearchFieldProps & { terms: string }) {
       data-pending={pending ? "" : undefined}
       className="flex gap-2"
     >
-      <div className="flex h-14 min-w-0 flex-1 bg-surface has-[input:focus-visible]:outline-3 has-[input:focus-visible]:outline-offset-2 has-[input:focus-visible]:outline-accent">
+      <div className="flex h-14 min-w-0 flex-1 bg-surface has-[input:focus-visible]:focus-ring">
         {/* No right padding: the text never reaches the edge, as the clear button comes with it. */}
         <label className="flex min-w-0 flex-1 cursor-text items-center gap-3 pl-4">
-          <svg
-            aria-hidden="true"
-            viewBox="0 0 24 24"
-            className="size-5 shrink-0"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <circle cx="10.5" cy="10.5" r="6.5" />
-            <path d="m15.5 15.5 5 5" />
-          </svg>
+          <SearchIcon className="size-5 shrink-0" />
           <span className="sr-only">{words.label}</span>
           <input
             ref={input}
@@ -148,23 +131,11 @@ function SearchForm({ path, terms }: SearchFieldProps & { terms: string }) {
             onClick={clear}
             className="grid w-14 shrink-0 place-items-center transition-colors hover:bg-stone"
           >
-            <svg
-              aria-hidden="true"
-              viewBox="0 0 24 24"
-              className="size-6"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path d="m5 5 14 14M19 5 5 19" />
-            </svg>
+            <CloseIcon className="size-6" />
           </button>
         )}
       </div>
-      <button
-        type="submit"
-        className="h-14 bg-ink px-5 font-medium text-ground transition-colors hover:bg-accent hover:text-accent-ink active:scale-[0.98]"
-      >
+      <button type="submit" className={`${buttonClass()} h-14 px-5`}>
         {words.submit}
       </button>
     </form>

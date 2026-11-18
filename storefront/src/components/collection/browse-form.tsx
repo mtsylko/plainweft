@@ -1,7 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { startTransition, useOptimistic, useState, type FormEvent } from "react";
+import { useOptimistic, useState, useTransition, type FormEvent } from "react";
+import { buttonClass } from "@/components/button";
+import { ChoiceChip } from "@/components/choice-chip";
 import { Select } from "@/components/select";
 import { useI18n } from "@/i18n/i18n-context";
 import {
@@ -37,7 +39,7 @@ export function BrowseForm({ path, browse, lists, price, currency }: BrowseFormP
   const sorts = Object.keys(SORTS[browse.scope]) as SortBy[];
   // A choice shows the moment it's made; the URL catches up when the navigation lands.
   const [shown, setShown] = useOptimistic(browse);
-  const [pending, setPending] = useOptimistic(false);
+  const [pending, startTransition] = useTransition();
   // The price fields keep what's typed until it's sent, and follow the URL again after.
   const [draft, setDraft] = useState(() => priceDraft(browse));
   const [synced, setSynced] = useState(browse);
@@ -55,7 +57,6 @@ export function BrowseForm({ path, browse, lists, price, currency }: BrowseFormP
     const next = readBrowse(new URLSearchParams(fields), browse.scope);
     startTransition(() => {
       setShown(next);
-      setPending(true);
       router.push(`${path}${searchFor(next)}`, { scroll: false });
     });
   }
@@ -84,32 +85,27 @@ export function BrowseForm({ path, browse, lists, price, currency }: BrowseFormP
             {list.values.map((value) => {
               const chosen = isChosen(shown, value.param);
               return (
-                <label
+                <ChoiceChip
                   key={value.param.join("=")}
-                  className="cursor-pointer has-disabled:cursor-auto"
+                  type="checkbox"
+                  name={value.param[0]}
+                  value={value.param[1]}
+                  checked={chosen}
+                  // A value that would leave nothing can't be added, but can still be taken off.
+                  disabled={!chosen && value.count === 0}
+                  onChange={(event) => send(event.currentTarget.form)}
+                  className="flex items-center gap-2 px-4 peer-disabled:text-muted"
                 >
-                  <input
-                    type="checkbox"
-                    name={value.param[0]}
-                    value={value.param[1]}
-                    checked={chosen}
-                    // A value that would leave nothing can't be added, but can still be taken off.
-                    disabled={!chosen && value.count === 0}
-                    onChange={(event) => send(event.currentTarget.form)}
-                    className="peer sr-only"
-                  />
-                  <span className="flex h-12 items-center gap-2 bg-surface px-4 transition-colors peer-checked:bg-ink peer-checked:text-ground peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-accent peer-enabled:hover:bg-stone peer-checked:hover:bg-ink peer-disabled:text-muted">
-                    {value.swatch && (
-                      <span
-                        aria-hidden="true"
-                        className="size-4"
-                        style={{ backgroundColor: value.swatch }}
-                      />
-                    )}
-                    {value.label}
-                    <span className="tabular-nums opacity-70">{value.count}</span>
-                  </span>
-                </label>
+                  {value.swatch && (
+                    <span
+                      aria-hidden="true"
+                      className="size-4"
+                      style={{ backgroundColor: value.swatch }}
+                    />
+                  )}
+                  {value.label}
+                  <span className="tabular-nums opacity-70">{value.count}</span>
+                </ChoiceChip>
               );
             })}
           </div>
@@ -136,10 +132,7 @@ export function BrowseForm({ path, browse, lists, price, currency }: BrowseFormP
               currency={currency}
               onChange={(max) => setDraft({ ...draft, max })}
             />
-            <button
-              type="submit"
-              className="h-12 bg-ink px-5 font-medium text-ground transition-colors hover:bg-accent hover:text-accent-ink active:scale-[0.98]"
-            >
+            <button type="submit" className={`${buttonClass()} h-12 px-5`}>
               {words.apply}
             </button>
           </div>
@@ -170,7 +163,7 @@ interface PriceFieldProps {
 /** One end of the price range. Enter sends the form, as in any text field. */
 function PriceField({ label, name, value, placeholder, currency, onChange }: PriceFieldProps) {
   return (
-    <label className="flex h-12 min-w-0 cursor-text items-center gap-2 bg-surface px-3 has-focus-visible:outline-3 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent md:px-4">
+    <label className="flex h-12 min-w-0 cursor-text items-center gap-2 bg-surface px-3 has-focus-visible:focus-ring md:px-4">
       {/* Side by side, two fields read as a range, so a phone keeps the words for screen readers. */}
       <span className="sr-only text-muted md:not-sr-only">{label}</span>
       <input

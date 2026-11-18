@@ -393,6 +393,9 @@ export async function getProduct(handle: string) {
   return { ...product, collections: { nodes: product.collections.nodes.filter(isRange) } };
 }
 
+/** A product as its page shows it. */
+export type Product = NonNullable<Awaited<ReturnType<typeof getProduct>>>;
+
 /**
  * Shopify's related products: worked out from sales, descriptions and collections, and adjustable
  * in the Search & Discovery app. Up to ten, most related first.

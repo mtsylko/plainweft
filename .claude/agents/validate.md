@@ -22,10 +22,13 @@ Check:
 - featured reasons: `FEATURE_REASONS` in `seed/src/catalog/types.ts` matches the
   `product.featured` labels in `storefront/src/i18n/dictionaries/`
 - option names: the seed names them `Color` and `Size` (`seed/src/catalog/product-input.ts`) and
-  never translates them; the storefront matches on those strings (`product-client.tsx`,
-  `lib/product/variants.ts`, `product-tile.tsx`)
+  never translates them; the storefront matches on those strings (`COLOR_OPTION` in
+  `lib/product/variants.ts`, and `CHOSEN_BY_SHOPPER` there for Size)
 - image file names: the seed names files `<handle>-<colour>-<view>` (`seed/src/catalog/images.ts`),
-  and the home page finds back views by `-back` in the file name
+  and the home page finds back views by the file name (`viewOf` in `lib/product/pictures.ts`)
+- colour swatches: `SWATCH` in `storefront/src/components/product/purchase.tsx` crops a square of
+  the variant's photo, and `seed/test/placeholders.test.ts` checks every drawn garment keeps fabric
+  in that same square
 - `API_VERSION` is the same in `seed/src/shopify/api-version.ts` and
   `storefront/src/lib/shopify/api-version.ts`
 - languages: every catalogue text the storefront shows in Polish is registered by

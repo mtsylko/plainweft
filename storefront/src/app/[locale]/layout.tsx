@@ -9,6 +9,7 @@ import { LOCALES } from "@/i18n/locales";
 import { openGraph, SITE_URL } from "@/i18n/metadata";
 import { getDictionary, getLocale } from "@/i18n/server";
 import { getCart } from "@/lib/cart/get-cart";
+import { STORE_NAME } from "@/lib/site";
 import "../globals.css";
 
 /** Every page prerenders once per language. */
@@ -21,7 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     // hreflang links and shared images need absolute URLs.
     metadataBase: SITE_URL,
-    title: { default: meta.title, template: "%s · Plainweft" },
+    title: { default: meta.title, template: `%s · ${STORE_NAME}` },
     description: meta.description,
     openGraph: openGraph(locale),
     // A link shared on X shows the wide picture, as it does everywhere else.

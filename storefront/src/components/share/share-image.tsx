@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { cacheLife } from "next/cache";
 import { ImageResponse } from "next/og";
+import { STORE_NAME } from "@/lib/site";
 import { themeColours } from "@/lib/theme";
 
 /** The size Open Graph and X both show whole. */
@@ -84,7 +85,7 @@ export async function shareImage({ title, caption, products }: ShareImageProps) 
           padding: "36px 40px",
         }}
       >
-        <div style={{ fontSize: 40, letterSpacing: -0.5 }}>Plainweft</div>
+        <div style={{ fontSize: 40, letterSpacing: -0.5 }}>{STORE_NAME}</div>
         <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
           <div style={{ fontSize: 76, lineHeight: 1, letterSpacing: -2.3 }}>{title}</div>
           <div style={{ fontSize: 32, color: COLOURS.muted }}>{caption}</div>

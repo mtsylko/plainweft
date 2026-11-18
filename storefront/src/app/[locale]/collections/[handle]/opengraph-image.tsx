@@ -3,6 +3,7 @@ import { dictionaryFor } from "@/i18n/dictionaries";
 import { formatPlural } from "@/i18n/format";
 import { hasLocale } from "@/i18n/locales";
 import { getCollectionPreview } from "@/lib/shopify/catalog";
+import { STORE_NAME } from "@/lib/site";
 
 interface Params {
   locale: string;
@@ -16,7 +17,7 @@ export async function generateImageMetadata({ params }: { params: Params }) {
   return [
     {
       id: "card",
-      alt: preview?.title ?? "Plainweft",
+      alt: preview?.title ?? STORE_NAME,
       size: SHARE_IMAGE_SIZE,
       contentType: "image/png",
     },

@@ -143,7 +143,7 @@ describe("drawGarment", () => {
   });
 
   // The product page's colour swatch is this square of the photo (SWATCH in the storefront's
-  // product-client.tsx), so a redrawn garment mustn't leave the backdrop showing there.
+  // components/product/purchase.tsx), so a redrawn garment mustn't leave the backdrop showing there.
   it("keeps fabric where the colour swatch looks", () => {
     const side = WIDTH * 0.125;
     const [left, top] = [WIDTH * 0.615 - side / 2, HEIGHT * 0.47 - side / 2];

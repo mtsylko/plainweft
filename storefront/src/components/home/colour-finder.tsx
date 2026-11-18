@@ -2,28 +2,31 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useId, useState } from "react";
+import type { ImageFragment } from "../../../generated/storefront.generated";
 import { formatPlural } from "@/i18n/format";
 import { useI18n } from "@/i18n/i18n-context";
-import { localePath } from "@/i18n/locales";
+import { localePath, productPath } from "@/i18n/locales";
 import type { ColourEntry } from "@/lib/product/colours";
-
-type Picture = { url: string; altText?: string | null };
+import { COLOR_OPTION, selectionToParams } from "@/lib/product/variants";
 
 /** Pick a colour, see everything that comes in it. Pointing at a name is enough on a desktop. */
-export function ColourFinder({ colours }: { colours: readonly ColourEntry<Picture>[] }) {
+export function ColourFinder({ colours }: { colours: readonly ColourEntry<ImageFragment>[] }) {
   const { locale, dictionary } = useI18n();
+  const titleId = useId();
   const [selected, setSelected] = useState(0);
   const colour = colours[selected];
   if (!colour) return null;
+  // Each product opens on the chosen colour: ?color=heather-grey.
+  const onColour = selectionToParams({ [COLOR_OPTION]: colour.name });
 
   return (
     <section
-      aria-labelledby="colours-title"
+      aria-labelledby={titleId}
       className="mt-section grid grid-cols-1 gap-y-8 px-gutter lg:min-h-[90svh] lg:grid-cols-12 lg:items-end lg:gap-x-2"
     >
       <div className="lg:col-span-5 lg:pb-[6svh]">
-        <h2 id="colours-title" className="rise text-head font-medium text-muted">
+        <h2 id={titleId} className="rise text-head font-medium text-muted">
           {dictionary.home.coloursTitle}
         </h2>
         <ul className="rise flex flex-wrap gap-x-6 text-head font-medium lg:block">
@@ -74,7 +77,7 @@ export function ColourFinder({ colours }: { colours: readonly ColourEntry<Pictur
             {colour.products.map((product) => (
               <li key={product.handle}>
                 <Link
-                  href={`${localePath(locale, `/products/${product.handle}`)}?color=${colour.slug}`}
+                  href={localePath(locale, productPath(product.handle, onColour))}
                   className="underline-offset-4 hover:underline"
                 >
                   {product.title}

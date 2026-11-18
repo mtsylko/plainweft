@@ -87,8 +87,7 @@
   }
 
   :focus-visible {
-    outline: 3px solid var(--color-accent);
-    outline-offset: 2px;
+    @apply focus-ring;
   }
 
   ::selection {
@@ -112,9 +111,6 @@
         animation: rise linear forwards;
         animation-timeline: view();
         animation-range: entry 0% entry 70%;
-      }
-      .rise-late {
-        animation-range: entry 15% entry 85%;
       }
       /*
         A percentage of entry grows with the element's height, so a double tile would still be rising
@@ -141,6 +137,16 @@
 */
 @utility trim-cap {
   text-box: trim-start cap alphabetic;
+}
+
+/*
+  The focus outline every control shows. A control drawn by something other than its focused
+  element takes it through a variant: a chip from its hidden input (peer-focus-visible:focus-ring),
+  a field's box from the input inside it (has-focus-visible:focus-ring).
+*/
+@utility focus-ring {
+  outline: 3px solid var(--color-accent);
+  outline-offset: 2px;
 }
 
 @keyframes rise {

@@ -24,6 +24,20 @@ export function localePath(locale: Locale, path = ""): string {
   return `/${locale}${path === "/" ? "" : path}`;
 }
 
+/**
+ * A product's page, before localePath adds the language. A query opens it on a variant:
+ * productPath("tee", new URLSearchParams({ color: "black" })) is /products/tee?color=black.
+ */
+export function productPath(handle: string, query?: URLSearchParams): string {
+  const search = query?.toString();
+  return `/products/${handle}${search ? `?${search}` : ""}`;
+}
+
+/** A collection's page, before localePath adds the language. */
+export function collectionPath(handle: string): string {
+  return `/collections/${handle}`;
+}
+
 /** The first language in an Accept-Language header that the store has, by the shopper's weights. */
 export function negotiateLocale(acceptLanguage: string | null | undefined): Locale | undefined {
   return (acceptLanguage ?? "")

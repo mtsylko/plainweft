@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { BrowseListing } from "@/components/collection/browse-listing";
+import { PageIntro } from "@/components/page-intro";
 import { SearchField } from "@/components/search/search-field";
 import { format, formatPlural } from "@/i18n/format";
 import { localePath } from "@/i18n/locales";
@@ -32,14 +33,7 @@ export default async function SearchPage({ searchParams }: PageProps<"/[locale]/
   return (
     // A group, so the results dim while the box's next search is on its way.
     <section aria-labelledby="search-title" className="group px-gutter pt-10 lg:pt-16">
-      <div className="mb-8 grid gap-4 lg:grid-cols-12 lg:items-start lg:gap-2">
-        <h1 id="search-title" className="enter text-head font-medium lg:col-span-6 lg:trim-cap">
-          {words.title}
-        </h1>
-        <p className="enter max-w-[40ch] text-lead text-pretty [--enter-step:1] lg:col-span-6 lg:col-start-7 lg:trim-cap">
-          {words.lead}
-        </p>
-      </div>
+      <PageIntro id="search-title" title={words.title} lead={words.lead} className="mb-8" />
       <div className="enter [--enter-step:2]">
         <SearchField path={path} />
       </div>

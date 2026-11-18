@@ -1,4 +1,5 @@
 import type { ChangeEvent } from "react";
+import { ChevronDownIcon } from "./icons";
 import styles from "./select.module.css";
 
 /** One choice in a `Select`. */
@@ -52,16 +53,7 @@ export function Select({ label, name, value, options, onChange, className }: Sel
             {option.label}
           </span>
         ))}
-        <svg
-          aria-hidden="true"
-          viewBox="0 0 16 16"
-          className="pointer-events-none absolute top-1/2 right-4 size-4 -translate-y-1/2 transition-transform peer-open:rotate-180 motion-reduce:transition-none"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-        >
-          <path d="m3 6 5 5 5-5" />
-        </svg>
+        <ChevronDownIcon className="pointer-events-none absolute top-1/2 right-4 size-4 -translate-y-1/2 transition-transform peer-open:rotate-180 motion-reduce:transition-none" />
       </span>
     </label>
   );

@@ -40,13 +40,16 @@ before using an API you are not sure of. This code relies on:
   (the HMAC check, tested in `test/`).
 - `src/lib/cart/`: `actions.ts` (Server Actions) and `get-cart.ts` (the request-time cart read).
 - `src/lib/product/`, `src/lib/money.ts` and `src/lib/theme.ts`: pure logic for variants,
-  featured tiles, colours, filter and search URLs (`browse.ts`), prices, and the `@theme` colours
-  drawn images use. No React and no Next.js in there, so `test/` can cover it.
+  featured tiles, colours, picture views, a product's care list and structured data (`details.ts`),
+  filter and search URLs (`browse.ts`), prices and cart sums, and the `@theme` colours drawn images
+  use. No React and no Next.js in there, so `test/` can cover it. `src/lib/site.ts` holds the
+  store's name and the hero photo's credit.
 - `src/i18n/`: locales, dictionaries, message formatting, `server.ts` for Server Components,
   `i18n-context.tsx` for Client Components, `metadata.ts` for `SITE_URL`, hreflang and the shared
   Open Graph fields.
 - `src/components/`: grouped by area (`cart/`, `collection/`, `home/`, `product/`, `search/`),
-  with shared pieces at the top (`catalogue`, `product-tile`, `price`, `fields`, `select`).
+  with shared pieces at the top: `catalogue`, `product-tile`, `price`, `fields`, `select`,
+  `button`, `choice-chip`, `page-intro`, `message-page`, `collection-links` and `icons`.
   `collection/browse-listing.tsx` is the filtered grid that collections and search share.
 - `generated/`: GraphQL types from codegen. Never edit by hand.
 - `@/*` resolves to `src/*`. Generated types sit outside `src`, so they are imported relatively.
@@ -90,7 +93,8 @@ Use the Shopify AI Toolkit (`shopify-dev-mcp`) to look up and validate Storefron
 - Keep strict TypeScript, `noUncheckedIndexedAccess` included: handle the `undefined` an index can
   return, and use `!` only where it can't happen (as in `fieldFor`).
 - Server Components by default. Add `"use client"` only for state, effects or browser APIs, and keep
-  the client part small (`product-client.tsx` holds the product page's interactive bits).
+  the client part small (`product/gallery.tsx` and `product/purchase.tsx` hold the product page's
+  interactive bits, and `product/use-selection.ts` the variant in the URL).
 - React Compiler is on: no `useMemo`, `useCallback` or `memo` for performance. Use React 19's own
   tools: `use()` for context and promises, `<Context value>` without `.Provider`, `useOptimistic`,
   `useTransition`.
@@ -101,6 +105,10 @@ Use the Shopify AI Toolkit (`shopify-dev-mcp`) to look up and validate Storefron
   `history.replaceState`, with no server round trip. Size is never preselected.
 - Pure logic goes in `src/lib/` with a test in `test/`. Prefer extending an existing module to
   adding a layer.
+- Reuse the shared pieces before writing markup again: `buttonClass()` for a filled button,
+  `ChoiceChip` for a checkbox or radio drawn as a chip, `PageIntro` for a title with its lead,
+  `MessagePage` for a page that only says something, and the icons in `icons.tsx`. A string the
+  code matches on, such as `COLOR_OPTION`, lives in one module and is imported.
 - Files are kebab-case. Components are named exports; only files Next.js loads by convention (route
   files, the image loader) export a default.
   Module constants are `UPPER_SNAKE_CASE` at the top (`DOUBLE_EVERY`, `FIRST_TILES`).
@@ -112,7 +120,8 @@ Use the Shopify AI Toolkit (`shopify-dev-mcp`) to look up and validate Storefron
 ## Languages
 
 - **The store is in `en` and `pl`** (`src/i18n/locales.ts`). Build every internal link with
-  `localePath(locale, path)`, never a bare `/products/…`.
+  `localePath(locale, path)`, never a bare `/products/…`, and a product's or a collection's path
+  with `productPath(handle, query?)` or `collectionPath(handle)`.
 - **The store's own words live in `src/i18n/dictionaries/`.** `en.ts` defines the `Dictionary` type
   and `pl.ts` must match it; a test checks both have the same keys. No copy hardcoded in
   components, `aria-label`, `sr-only` and alt fallbacks included.
@@ -154,14 +163,16 @@ plainly. The tokens live in `@theme` in `src/app/globals.css`; there is no `tail
   `h-*` or `overflow-hidden` around text. Polish copy, laptops from 1024px and a reader's own text
   spacing (WCAG 1.4.12) all need the room.
 - **Every state keeps its contrast**: text stays at 4.5:1 on hover too. An ink button turns
-  `bg-accent text-accent-ink` on hover; ground text on the teal is only 4.1:1.
+  `bg-accent text-accent-ink` on hover, as `buttonClass()` does; ground text on the teal is only
+  4.1:1.
 - **What Tailwind can't name goes in a CSS module beside its component**, as a select's opened
   list (`::picker(select)`) does in `select.module.css`. `globals.css` keeps the tokens and what
   every page shares.
 - **Arbitrary values are fine when nothing fits**: `aspect-[4/5]`, `max-w-[40ch]`,
   `[--enter-step:1]`. `style={{}}` is only for runtime values and custom properties a child reads.
-- **Icons are inline SVG** with `aria-hidden`, like the footer's arrow, and controls carry text
-  labels.
+- **Icons are inline SVG** in `components/icons.tsx`, hidden from screen readers, and controls
+  carry text labels. The one exception is the select's tick, a CSS mask (`select-tick.svg`) on a
+  part only CSS can reach.
 - When a new `@theme` token doesn't show up, Turbopack has cached the old CSS: delete `.next` and
   rebuild. `next dev` also needs a restart after `globals.css` changes.
 
@@ -170,8 +181,10 @@ plainly. The tokens live in `@theme` in `src/app/globals.css`; there is no `tail
 - Semantic HTML first: a modal `<dialog>` for the bag, radios in a `<fieldset>` for options, `<dl>`
   for facts, `<del>` with an `sr-only` label for the old price, and `role="status"` for notices.
 - Headings don't skip a level: a product tile's heading sits one below its list's (`tileHeading`).
-- Focus shows through the global `:focus-visible` outline. A visually hidden input styles its
-  visible part with `peer-focus-visible`. `scroll-padding-top` keeps it clear of the sticky header.
+- Focus shows through the global `:focus-visible` outline. A visually hidden input gives its
+  visible part the same outline with `peer-focus-visible:focus-ring`, and a box around an input
+  with `has-focus-visible:focus-ring`, or `has-[input:focus-visible]:focus-ring` when the box
+  also holds a button, as the search box does. `scroll-padding-top` keeps it clear of the sticky header.
 - Focus never falls to the page. Before an action removes the focused element (a bag line), move
   focus somewhere that stays (the bag's title). Don't disable a button while its action runs, as
   that drops focus too: mark it `aria-disabled` and ignore repeat presses.

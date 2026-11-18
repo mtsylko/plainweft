@@ -3,8 +3,9 @@ import Link from "next/link";
 import type { CSSProperties } from "react";
 import type { ProductCardFragment } from "../../generated/storefront.generated";
 import { formatPlural } from "@/i18n/format";
-import { localePath } from "@/i18n/locales";
+import { localePath, productPath } from "@/i18n/locales";
 import { getDictionary, getLocale } from "@/i18n/server";
+import { COLOR_OPTION } from "@/lib/product/variants";
 import { fieldFor } from "./fields";
 import { Price } from "./price";
 
@@ -39,7 +40,8 @@ export async function ProductTile({
   const [locale, { product: words }] = await Promise.all([getLocale(), getDictionary()]);
   // Only the first picture: the next ones are mostly other colours, which would read as a recolour.
   const [front] = product.images.nodes;
-  const colours = product.options.find((option) => option.name === "Color")?.optionValues.length;
+  const colours = product.options.find((option) => option.name === COLOR_OPTION)?.optionValues
+    .length;
   // A sold-out piece says so; one that can be bought says why it's featured, if it is.
   const reason = product.featured?.value;
   const label = product.availableForSale
@@ -51,11 +53,11 @@ export async function ProductTile({
 
   return (
     <li
-      className={`${enterStep === undefined ? "rise rise-even" : "enter"} grid grid-rows-subgrid pb-8 ${double ? "col-span-2 row-span-4" : "row-span-2"}`}
+      className={`${enterStep === undefined ? "rise rise-even" : "enter"} ${tileClass(double)}`}
       style={enterStep === undefined ? undefined : ({ "--enter-step": enterStep } as CSSProperties)}
     >
       <Link
-        href={localePath(locale, `/products/${product.handle}`)}
+        href={localePath(locale, productPath(product.handle))}
         className="group row-span-full grid grid-rows-subgrid"
       >
         {/*
@@ -63,9 +65,7 @@ export async function ProductTile({
           Stretched, it is taller than the photo, so the photo is fitted whole, not cropped at the sleeves,
           and the margins take the photo's own ground, so they blend into the field the same way.
         */}
-        <div
-          className={`relative aspect-[4/5] overflow-hidden ${double ? "row-span-3 place-self-stretch" : ""} ${fieldFor(index)}`}
-        >
+        <div className={`relative overflow-hidden ${pictureClass(index, double)}`}>
           {front && (
             <Image
               src={front.url}
@@ -113,12 +113,8 @@ export async function ProductTile({
  */
 export function TilePlaceholder({ index, double = false }: { index: number; double?: boolean }) {
   return (
-    <li
-      className={`grid grid-rows-subgrid pb-8 ${double ? "col-span-2 row-span-4" : "row-span-2"}`}
-    >
-      <div
-        className={`aspect-[4/5] ${double ? "row-span-3 place-self-stretch" : ""} ${fieldFor(index)}`}
-      />
+    <li className={tileClass(double)}>
+      <div className={pictureClass(index, double)} />
       {/* The caption's lines: name, price and fabric. */}
       <div className="pt-3">
         <div className="h-lh" />
@@ -127,4 +123,18 @@ export function TilePlaceholder({ index, double = false }: { index: number; doub
       </div>
     </li>
   );
+}
+
+/**
+ * The tile's place in its list's grid: a subgrid over the picture's rows and the caption's. The tile
+ * and its placeholder both take their room from here and from pictureClass, so a list that is still
+ * loading holds exactly the space its tiles will fill, and the page below doesn't move.
+ */
+function tileClass(double: boolean): string {
+  return `grid grid-rows-subgrid pb-8 ${double ? "col-span-2 row-span-4" : "row-span-2"}`;
+}
+
+/** The picture's field, 4:5, or stretched down beside a double tile's neighbours. */
+function pictureClass(index: number, double: boolean): string {
+  return `aspect-[4/5] ${double ? "row-span-3 place-self-stretch" : ""} ${fieldFor(index)}`;
 }

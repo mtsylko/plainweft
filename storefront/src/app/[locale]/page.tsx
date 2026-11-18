@@ -3,10 +3,12 @@ import { Catalogue } from "@/components/catalogue";
 import { ColourFinder } from "@/components/home/colour-finder";
 import { Hero } from "@/components/home/hero";
 import { Mosaic } from "@/components/home/mosaic";
+import { PageIntro } from "@/components/page-intro";
 import { formatPlural } from "@/i18n/format";
 import { alternates, openGraph } from "@/i18n/metadata";
 import { getDictionary, getLocale } from "@/i18n/server";
 import { groupByColour } from "@/lib/product/colours";
+import { pickPair } from "@/lib/product/pictures";
 import { getColourIndex, getCollections, getProducts } from "@/lib/shopify/catalog";
 
 const COLOURS_SHOWN = 6;
@@ -28,33 +30,30 @@ export default async function Home() {
     getDictionary(),
   ]);
 
-  const images = products.flatMap((product) => product.images.nodes);
-  // The seed names files <handle>-<colour>-<view>; alt text is translated, file names are not.
-  const backViews = images.filter((image) => /-back\.\w+$/.test(new URL(image.url).pathname));
-  const mosaicPictures = [backViews[0] ?? images[0], backViews[1] ?? images[1]] as const;
+  // The tiles above show each product's first picture, so the mosaic shows backs.
+  const mosaicPictures = pickPair(
+    products.flatMap((product) => product.images.nodes),
+    "back",
+  );
 
   return (
     <>
       <Hero collections={collections} />
 
       <section id="catalogue" aria-labelledby="catalogue-title" className="px-gutter pt-section">
-        {/* Laid out like a collection's heading: the lead starts on the grid's third column. */}
-        <div className="mb-10 grid gap-4 lg:grid-cols-12 lg:items-start lg:gap-2">
-          <h2 id="catalogue-title" className="rise text-head font-medium lg:col-span-6 lg:trim-cap">
-            {formatPlural(locale, home.catalogueTitle, products.length)}
-          </h2>
-          <p className="rise max-w-[40ch] text-pretty lg:col-span-6 lg:col-start-7 lg:trim-cap">
-            {home.catalogueLead}
-          </p>
-        </div>
+        <PageIntro
+          section
+          id="catalogue-title"
+          title={formatPlural(locale, home.catalogueTitle, products.length)}
+          lead={home.catalogueLead}
+          className="mb-10"
+        />
         <Catalogue products={products} />
       </section>
 
       <ColourFinder colours={groupByColour(colourIndex).slice(0, COLOURS_SHOWN)} />
 
-      {mosaicPictures[0] && mosaicPictures[1] && (
-        <Mosaic pictures={[mosaicPictures[0], mosaicPictures[1]]} />
-      )}
+      {mosaicPictures && <Mosaic pictures={mosaicPictures} />}
     </>
   );
 }

@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { LOCALES, localePath } from "@/i18n/locales";
+import { collectionPath, LOCALES, localePath, productPath } from "@/i18n/locales";
 import { languageVersions, SITE_URL } from "@/i18n/metadata";
 import { getCollectionHandles, getProductHandles } from "@/lib/shopify/catalog";
 
@@ -13,11 +13,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // The home page shows the whole catalogue, so it has no one date of its own.
     { path: "" },
     ...collections.map(({ handle, updatedAt }) => ({
-      path: `/collections/${handle}`,
+      path: collectionPath(handle),
       lastModified: updatedAt,
     })),
     ...products.map(({ handle, updatedAt }) => ({
-      path: `/products/${handle}`,
+      path: productPath(handle),
       lastModified: updatedAt,
     })),
   ];
